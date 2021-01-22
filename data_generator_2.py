@@ -2,9 +2,6 @@ import pandas
 import numpy as np
 from torch.utils.data import Dataset
 
-
-map = 'brc300d'
-
 def load_dataset(input_csv_file):
     df = pandas.read_csv('Dataset/' + input_csv_file + '.csv', header=None)
     df_land = pandas.read_csv('Landmark/' + input_csv_file + '_4.csv', header=None)
@@ -57,6 +54,3 @@ class dataset_loader(Dataset):
 
     def __getitem__(self, idx):
         return self.x[idx], self.y[idx]
-
-
-load_dataset('arena')

@@ -2,7 +2,7 @@ import numpy as np
 import csv
 import pandas
 
-map = 'brc300d'
+map = 'brc100d'
 
 def get_euclidean(input_csv_file):
     coordinates = []
