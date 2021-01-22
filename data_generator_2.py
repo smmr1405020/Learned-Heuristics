@@ -2,11 +2,14 @@ import pandas
 import numpy as np
 from torch.utils.data import Dataset
 
+Region_type = 'K'
+
+
 def load_dataset(input_csv_file):
     df = pandas.read_csv('Dataset/' + input_csv_file + '.csv', header=None)
     df_land = pandas.read_csv('Landmark/' + input_csv_file + '_4.csv', header=None)
     df_euclidean = pandas.read_csv('Euclidean/' + input_csv_file + '.csv', header=None)
-    df_region = pandas.read_csv('Region/' + input_csv_file + '.csv', header=None)
+    df_region = pandas.read_csv("Region_" + Region_type + "/" + input_csv_file + ".csv", header=None)
 
     df_np = df.values
     landmark_mat = df_land.values

@@ -83,8 +83,8 @@ def get_region_grid(coordinates, grid_size):
     return cluster_assignment
 
 
-def write_cluster_assignment(input_csv_file, cluster_assignment):
-    with open("Region/" + input_csv_file + ".csv", mode='w', newline="") as csv_file:
+def write_cluster_assignment(input_csv_file, cluster_assignment, type):
+    with open("Region_" + type+ "/" + input_csv_file + ".csv", mode='w', newline="") as csv_file:
         csv_file_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         csv_file_writer.writerow(cluster_assignment)
 
@@ -93,5 +93,5 @@ coordinates, euclidean = get_euclidean(map)
 cluster_assignment_K = get_region_cluster(map, euclidean)
 cluster_assignment_grid = get_region_grid(coordinates, 100)
 
-write_cluster_assignment(map, cluster_assignment_K)
+write_cluster_assignment(map, cluster_assignment_grid,'grid')
 
