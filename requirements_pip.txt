@@ -1,0 +1,25 @@
+certifi==2020.6.20
+cycler==0.10.0
+decorator==4.4.2
+imbalanced-learn @ file:///home/conda/feedstock_root/build_artifacts/imbalanced-learn_1592145894352/work
+joblib @ file:///tmp/build/80754af9/joblib_1594236160679/work
+kiwisolver==1.2.0
+matplotlib @ file:///C:/ci/matplotlib-base_1592837548929/work
+mkl-fft==1.1.0
+mkl-random==1.1.1
+mkl-service==2.3.0
+networkx @ file:///tmp/build/80754af9/networkx_1594377231366/work
+numpy @ file:///C:/ci/numpy_and_numpy_base_1596215850360/work
+pandas @ file:///C:/ci/pandas_1592833613419/work
+pydot==1.4.1
+pyparsing==2.4.7
+python-dateutil==2.8.1
+pytz==2020.1
+scikit-learn @ file:///C:/ci/scikit-learn_1592853510272/work
+scipy @ file:///C:/ci/scipy_1592916963468/work
+sip==4.19.13
+six==1.15.0
+threadpoolctl @ file:///tmp/tmp9twdgx9k/threadpoolctl-2.1.0-py3-none-any.whl
+torch==1.6.0
+tornado==6.0.4
+wincertstore==0.2
