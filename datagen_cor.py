@@ -2,7 +2,7 @@ import numpy as np
 import csv
 import pandas
 
-map = 'arena2'
+map = 'brc300d'
 
 def get_euclidean(input_csv_file):
     coordinates = []
@@ -91,7 +91,7 @@ def write_cluster_assignment(input_csv_file, cluster_assignment):
 
 coordinates, euclidean = get_euclidean(map)
 cluster_assignment_K = get_region_cluster(map, euclidean)
-cluster_assignment_grid = get_region_grid(coordinates, 50)
+cluster_assignment_grid = get_region_grid(coordinates, 100)
 
-write_cluster_assignment(map, cluster_assignment_grid)
+write_cluster_assignment(map, cluster_assignment_K)
 
