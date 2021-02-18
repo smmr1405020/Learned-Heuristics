@@ -1,8 +1,9 @@
 import numpy as np
 import csv
 import pandas
+import matplotlib.pyplot as plt
 
-map = 'brc300d'
+map = 'brc100d'
 
 def get_euclidean(input_csv_file):
     coordinates = []
@@ -17,6 +18,11 @@ def get_euclidean(input_csv_file):
     for i in range(len(euclidean)):
         for j in range(i + 1, len(euclidean)):
             euclidean[i][j] = euclidean[j][i] = np.linalg.norm(coordinates[i] - coordinates[j])
+
+    with open("Coordinates/" + input_csv_file + ".csv", mode='w', newline="") as csv_file:
+        csv_file_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for row in coordinates:
+            csv_file_writer.writerow(row)
 
     with open("Euclidean/" + input_csv_file + ".csv", mode='w', newline="") as csv_file:
         csv_file_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)

@@ -10,7 +10,7 @@ torch.manual_seed(12345)
 random.seed(12345)
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-map = 'brc300d'
+map = 'arena'
 
 
 def f_fn(delta, x):
@@ -112,4 +112,4 @@ def train_model(save_path, epochs, input_csv_file):
     np.savetxt(save_path, adj_mat, delimiter=",", fmt='%.3f')
 
 
-train_model('Outputs/'+map+'.csv', 5, map)
+train_model('Outputs/'+map+'.csv', 200, map)

@@ -4,6 +4,12 @@ import seaborn as sns
 import pandas
 
 map = 'brc300d'
+no_landmarks = 8
+
+def get_points(input_csv_file):
+    df = pandas.read_csv('Coordinates/' + input_csv_file + '.csv', header=None)
+    df_np = df.values
+    return df_np
 
 
 def get_actual_distance_matrix(input_csv_file):
@@ -13,9 +19,12 @@ def get_actual_distance_matrix(input_csv_file):
 
 
 def get_predicted_distance_matrix_landmark(input_csv_file):
-    df_land = pandas.read_csv('Landmark/' + input_csv_file + '_8.csv', header=None)
+    df_land = pandas.read_csv('Landmark_makeshift/' + input_csv_file + '_'+str(no_landmarks)+'.csv', header=None)
     landmark_mat = df_land.values
-    return landmark_mat
+
+    df_land_ids = pandas.read_csv('Landmark_makeshift_list/' + input_csv_file + '_'+str(no_landmarks)+'.csv', header=None)
+    land_ids = df_land_ids.values
+    return land_ids, landmark_mat
 
 
 def get_predicted_distance_matrix_euclidean(input_csv_file):
@@ -26,6 +35,18 @@ def get_predicted_distance_matrix_euclidean(input_csv_file):
 
 def get_predicted_distance_matrix_DNN(input_csv_file):
     df_dnn = pandas.read_csv('Outputs/' + input_csv_file + '.csv', header=None)
+    dnn_mat = df_dnn.values
+    return dnn_mat
+
+
+def get_predicted_distance_matrix_DNN_K(input_csv_file):
+    df_dnn = pandas.read_csv('Outputs_K/' + input_csv_file + '.csv', header=None)
+    dnn_mat = df_dnn.values
+    return dnn_mat
+
+
+def get_predicted_distance_matrix_DNN_grid(input_csv_file):
+    df_dnn = pandas.read_csv('Outputs_grid/' + input_csv_file + '.csv', header=None)
     dnn_mat = df_dnn.values
     return dnn_mat
 
@@ -41,77 +62,125 @@ def get_region_matrix(input_csv_file):
     return region, region_dict
 
 
+coordinates = get_points(map)
 actual_distance_matrix = get_actual_distance_matrix(map)
 region_array, region_dict = get_region_matrix(map)
 
-predicted_distance_matrix_landmark = get_predicted_distance_matrix_landmark(map)
+landmark_ids, predicted_distance_matrix_landmark = get_predicted_distance_matrix_landmark(map)
 SE_matrix_landmark = (actual_distance_matrix - predicted_distance_matrix_landmark) ** 2
 print("MSE Landmark: {}".format(np.mean(SE_matrix_landmark)))
+
+landmark_coordinates = coordinates[landmark_ids][0]
 
 predicted_distance_matrix_euclidean = get_predicted_distance_matrix_euclidean(map)
 SE_matrix_euclidean = (actual_distance_matrix - predicted_distance_matrix_euclidean) ** 2
 print("MSE Euclidean: {}".format(np.mean(SE_matrix_euclidean)))
 
-predicted_distance_matrix_dnn = get_predicted_distance_matrix_DNN(map)
-SE_matrix_dnn = (actual_distance_matrix - predicted_distance_matrix_dnn) ** 2
-print("MSE DNN: {}".format(np.mean(SE_matrix_dnn)))
+######################
+
+# predicted_distance_matrix_dnn_grid = get_predicted_distance_matrix_DNN_grid(map)
+# SE_matrix_dnn_grid = (actual_distance_matrix - predicted_distance_matrix_dnn_grid) ** 2
+# print("MSE DNN grid: {}".format(np.mean(SE_matrix_dnn_grid)))
+#
+# predicted_distance_matrix_dnn_K = get_predicted_distance_matrix_DNN_K(map)
+# SE_matrix_dnn_K = (actual_distance_matrix - predicted_distance_matrix_dnn_K) ** 2
+# print("MSE DNN K: {}".format(np.mean(SE_matrix_dnn_K)))
+
+#######################
 
 
-def get_nodewise_sq_error_sorted(SE_matrix):
+def get_nodewise_sq_error(SE_matrix):
     num_nodes = len(SE_matrix)
     sum_error = np.sum(SE_matrix, axis=1)
     sum_error /= num_nodes
-    # print(np.sort(sum_error))
-    # print(np.argsort(sum_error))
     return sum_error
 
 
-def get_region_error(SE_matrix, region_dict):
-    grid_size = 100
+def draw_heatmap(point_coordinates, error_mat, figure, axis, caption):
+    im = axis.scatter(point_coordinates[:, 0], point_coordinates[:, 1], c=error_mat, cmap='viridis')
+    figure.colorbar(im, ax=axis)
+    axis.title.set_text(caption)
 
-    num_regions = grid_size * grid_size
-    region_error_mat = np.zeros((grid_size * grid_size))
-
-    for i in range(num_regions):
-        if i in region_dict.keys():
-            nodes_i = region_dict[i]
-            distances = []
-            for k in range(len(nodes_i)):
-                distances.append(np.mean(SE_matrix[nodes_i[k], :]))
-
-            mean_d = np.mean(distances)
-            region_error_mat[i] = mean_d
-
-    region_error_mat = region_error_mat.reshape(grid_size, -1)
-
-    return region_error_mat
-
-
-def draw_region_heatmap(region_error_mat):
-    plt.imshow(region_error_mat, cmap='viridis')
-    plt.colorbar()
-    plt.show()
     return
 
+def get_dist_to_max_SE(SE_matrix):
+
+    sum_error = get_nodewise_sq_error(SE_matrix)
+    max_err_node_id = np.argmax(sum_error)
+
+    return max_err_node_id, SE_matrix[max_err_node_id]
 
 
-# sum_error_euclidean = get_nodewise_sq_error_sorted(SE_matrix_euclidean)
+# sum_error_euclidean = get_nodewise_sq_error(SE_matrix_euclidean)
 # plt.plot(np.arange(sum_error_euclidean.shape[0]), sorted(sum_error_euclidean), color='red', label='euclidean')
+#
+# sum_error_landmark = get_nodewise_sq_error(SE_matrix_landmark)
+# plt.plot(np.arange(sum_error_landmark.shape[0]), sorted(sum_error_landmark), color='blue', label='landmark')
+#
+# sum_error_dnn_K = get_nodewise_sq_error(SE_matrix_dnn_K)
+# plt.plot(np.arange(sum_error_dnn_K.shape[0]), sorted(sum_error_dnn_K), color='green', label='dnn_K')
+#
+# sum_error_dnn_grid = get_nodewise_sq_error(SE_matrix_dnn_grid)
+# plt.plot(np.arange(sum_error_dnn_K.shape[0]), sorted(sum_error_dnn_grid), color='purple', label='dnn_grid')
+#
+# plt.legend()
+# plt.show()
+#
+# sum_error_euclidean = get_nodewise_sq_error(SE_matrix_euclidean)
+# plt.plot(np.arange(sum_error_euclidean.shape[0]), sum_error_euclidean, color='red', label='euclidean')
+#
+# sum_error_landmark = get_nodewise_sq_error(SE_matrix_landmark)
+# plt.plot(np.arange(sum_error_landmark.shape[0]), sum_error_landmark, color='blue', label='landmark')
+#
+# sum_error_dnn_K = get_nodewise_sq_error(SE_matrix_dnn_K)
+# plt.plot(np.arange(sum_error_dnn_K.shape[0]), sum_error_dnn_K, color='green', label='dnn_K')
+#
+# sum_error_dnn_grid = get_nodewise_sq_error(SE_matrix_dnn_grid)
+# plt.plot(np.arange(sum_error_dnn_K.shape[0]), sum_error_dnn_grid, color='purple', label='dnn_grid')
+#
+# plt.legend()
+# plt.show()
 
-sum_error_landmark = get_nodewise_sq_error_sorted(SE_matrix_landmark)
-plt.plot(np.arange(sum_error_landmark.shape[0]), sorted(sum_error_landmark), color='blue', label='landmark')
 
-sum_error_dnn = get_nodewise_sq_error_sorted(SE_matrix_dnn)
-plt.plot(np.arange(sum_error_dnn.shape[0]), sorted(sum_error_dnn), color='green', label='dnn')
+fig, axes = plt.subplots(ncols=2, nrows=2, figsize=(8, 4))
 
-plt.legend()
+r1, r2 = axes
+c1, c2 = r1
+c3, c4 = r2
+
+img = plt.imread('Images/' + map + '.png')
+c1.imshow(img)
+c1.title.set_text('Original Image')
+
+draw_heatmap(coordinates, get_nodewise_sq_error(SE_matrix_euclidean), fig, c2, 'euclidean: ' + str(np.mean(SE_matrix_euclidean)))
+draw_heatmap(coordinates, get_nodewise_sq_error(SE_matrix_landmark), fig, c3, 'landmark: ' + str(np.mean(SE_matrix_landmark)))
+c3.scatter(landmark_coordinates[:, 0], landmark_coordinates[:, 1], c='red', cmap='viridis')
+
+plt.show()
+#draw_heatmap(coordinates, get_nodewise_sq_error(SE_matrix_dnn_K), fig, c4, 'dnn_K: ' + str(np.mean(SE_matrix_dnn_K)))
+
+fig_2, axes_2 = plt.subplots(ncols=2, nrows=2, figsize=(8, 4))
+
+r1_2, r2_2 = axes_2
+c1_2, c2_2 = r1_2
+c3_2, c4_2 = r2_2
+
+draw_heatmap(coordinates, get_nodewise_sq_error(SE_matrix_euclidean), fig_2, c1_2, 'euclidean: ' + str(np.mean(SE_matrix_euclidean)))
+
+max_err_node_id_euclidean, SE_max_euclidean =  get_dist_to_max_SE(SE_matrix_euclidean)
+draw_heatmap(coordinates, SE_max_euclidean, fig_2, c2_2, 'euclidean_max: ' + str(np.mean(SE_max_euclidean)))
+c2_2.scatter(coordinates[max_err_node_id_euclidean][0],coordinates[max_err_node_id_euclidean][1], c='red', cmap='viridis')
+
+draw_heatmap(coordinates, get_nodewise_sq_error(SE_matrix_landmark), fig_2, c3_2, 'landmark: ' + str(np.mean(SE_matrix_landmark)))
+c3_2.scatter(landmark_coordinates[:, 0], landmark_coordinates[:, 1], c='red', cmap='viridis')
+
+max_err_node_id_landmark, SE_max_landmark = get_dist_to_max_SE(SE_matrix_landmark)
+draw_heatmap(coordinates, SE_max_landmark, fig_2, c4_2, 'landmark_max: ' + str(np.mean(SE_max_landmark)))
+c4_2.scatter(coordinates[max_err_node_id_landmark][0],coordinates[max_err_node_id_landmark][1], c='red', cmap='viridis')
+
+
+
+
 plt.show()
 
-region_error_mat_euclidean = get_region_error(SE_matrix_euclidean, region_dict)
-draw_region_heatmap(region_error_mat_euclidean)
 
-region_error_mat_landmark = get_region_error(SE_matrix_landmark, region_dict)
-draw_region_heatmap(region_error_mat_landmark)
-
-region_error_mat_dnn = get_region_error(SE_matrix_dnn, region_dict)
-draw_region_heatmap(region_error_mat_dnn)
